@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using MimeKit;
@@ -54,12 +56,21 @@ using (var logFile = new StreamWriter("log.txt"))
                     {
                         client.Connect("smtp.example.com", 587, false);
                         client.Authenticate("username", "password");
-                        client.Send(message);
+
+                        try
+                        {
+                            await client.SendAsync(message);
+                            // Log success
+                            logFile.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " - Sent encrypted PDF to " + email);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log email sending error
+                            logFile.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " - ERROR: Failed to send email to " + email + ": " + ex.ToString());
+                        }
+
                         client.Disconnect(true);
                     }
-
-                    // Log success
-                    logFile.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " - Sent encrypted PDF to " + email);
                 }
                 else
                 {
